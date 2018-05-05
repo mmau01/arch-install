@@ -37,12 +37,6 @@ $ mount /dev/nvme0n1p2 /mnt/boot
 $ mkdir /mnt/boot/efi
 $ mount /dev/nvme0n1p1 /mnt/boot/efi
 ```
-
-#### Edit the Mirrorlist To Optimize Package Download Speeds
-```
-$ nano /etc/pacman.d/mirrorlist
-```
-
 #### Install the base system.
 ```
 $ pacstrap /mnt base base-devel efibootmgr networkmanager grub-efi-x86_64 btrfs-progs intel-ucode vim wget net-tools
@@ -71,16 +65,7 @@ $ echo "blacklist wacom" >> /etc/modprobe.d/blacklist.conf
 $ sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect modconf block keymap encrypt lvm2 resume filesystems keyboard fsck)/' /etc/mkinitcpio.conf
 $ mkinitcpio -p linux
 ```
-#### Add a keyfile to decrypt and mount the boot volume during startup.
-```
-$ dd bs=512 count=4 if=/dev/urandom of=/crypto_keyfile.bin
-$ chmod 000 /crypto_keyfile.bin
-$ chmod 600 /boot/initramfs-linux*
-$ cryptsetup luksAddKey /dev/nvme0n1p2 /crypto_keyfile.bin
-$ echo "cryptboot /dev/nvme0n1p2 /crypto_keyfile.bin luks" >> /etc/crypttab
-$ mkinitcpio -p linux
-```
-#### Install/Configure GRUB.
+#### Install and configure GRUB.
 ```
 $ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux
 $ sed -i 's/^#GRUB_ENABLE_CRYPTODISK=.*/GRUB_ENABLE_CRYPTODISK=y/' /etc/default/grub
