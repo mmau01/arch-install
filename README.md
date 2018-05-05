@@ -13,40 +13,39 @@ $ wifi-menu
 ```
 #### Create partitions for EFI, boot, and root.
 ```
-$ parted -s /dev/nvme0n1 mklabel gpt
-$ parted -s /dev/nvme0n1 mkpart primary fat32 1MiB 513MiB
-$ parted -s /dev/nvme0n1 set 1 boot on
-$ parted -s /dev/nvme0n1 set 1 esp on
-$ parted -s /dev/nvme0n1 mkpart primary 513MiB 1024MiB
-$ parted -s /dev/nvme0n1 mkpart primary 1024MiB 100%
+$ cgdisk /dev/nvme0n1
+  1 100MB EFI partition # Hex code ef00
+  2 250MB Boot partition # Hex code 8300
+  3 100% size partiton # (to be encrypted) Hex code 8300
 $ mkfs.vfat -F32 /dev/nvme0n1p1
+$ mkfs.ext4 /dev/nvme0n1p2
 ```
 #### Create and mount the encrypted root filesystem.
 ```
-$ cryptsetup luksFormat /dev/nvme0n1p3
-$ cryptsetup luksOpen /dev/nvme0n1p3 lvm
-$ pvcreate /dev/mapper/lvm
-$ vgcreate arch /dev/mapper/lvm
+$ cryptsetup -c aes-xts-plain64 -h sha512 -s 512 --use-random luksFormat /dev/nvme0n1p3
+$ cryptsetup luksOpen /dev/nvme0n1p3 luks-lvm
+$ pvcreate /dev/mapper/luks-lvm
+$ vgcreate arch /dev/mapper/luks-lvm
 $ lvcreate -L 8G arch -n swap
 $ lvcreate -l +100%FREE arch -n root
 $ mkswap -L swap /dev/mapper/arch-swap
-$ mkfs.ext4 /dev/mapper/arch-root
+$ mkfs.btrfs /dev/mapper/arch-root
 $ mount /dev/mapper/arch-root /mnt
 $ swapon /dev/mapper/arch-swap
-```
-#### Encrypt the boot partition using a separate passphrase from the root partition, then mount the boot and EFI partitions.
-```
-$ cryptsetup luksFormat /dev/nvme0n1p2
-$ cryptsetup luksOpen /dev/nvme0n1p2 cryptboot
-$ mkfs.ext4 /dev/mapper/cryptboot
 $ mkdir /mnt/boot
-$ mount /dev/mapper/cryptboot /mnt/boot
+$ mount /dev/nvme0n1p2 /mnt/boot
 $ mkdir /mnt/boot/efi
 $ mount /dev/nvme0n1p1 /mnt/boot/efi
 ```
+
+#### Edit the Mirrorlist To Optimize Package Download Speeds
+```
+$ nano /etc/pacman.d/mirrorlist
+```
+
 #### Install the base system.
 ```
-$ pacstrap /mnt base base-devel efibootmgr networkmanager grub-efi-x86_64 intel-ucode vim wget net-tools
+$ pacstrap /mnt base base-devel efibootmgr networkmanager grub-efi-x86_64 btrfs-progs intel-ucode vim wget net-tools
 ```
 #### Generate and verify fstab.
 ```
@@ -69,9 +68,7 @@ $ echo "blacklist wacom" >> /etc/modprobe.d/blacklist.conf
 ```
 #### Set your mkinitcpio encrypt/lvm2 hooks and rebuild.
 ```
-$ sed -i 's/^MODULES=.*/MODULES=(ext4 i915)/' /etc/mkinitcpio.conf
-$ sed -i 's/^HOOKS=.*/HOOKS=(base udev keyboard autodetect modconf block encrypt lvm2 resume filesystems fsck)/' /etc/mkinitcpio.conf
-$ sed -i 's/^FILES=.*/FILES=(\/crypto_keyfile.bin)/' /etc/mkinitcpio.conf
+$ sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect modconf block keymap encrypt lvm2 resume filesystems keyboard fsck)/' /etc/mkinitcpio.conf
 $ mkinitcpio -p linux
 ```
 #### Add a keyfile to decrypt and mount the boot volume during startup.
@@ -83,17 +80,16 @@ $ cryptsetup luksAddKey /dev/nvme0n1p2 /crypto_keyfile.bin
 $ echo "cryptboot /dev/nvme0n1p2 /crypto_keyfile.bin luks" >> /etc/crypttab
 $ mkinitcpio -p linux
 ```
-#### Configure GRUB.
+#### Install/Configure GRUB.
 ```
+$ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux
 $ sed -i 's/^#GRUB_ENABLE_CRYPTODISK=.*/GRUB_ENABLE_CRYPTODISK=y/' /etc/default/grub
 $ echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /etc/default/grub
 $ wget https://gist.githubusercontent.com/anonymous/8eb2019db2e278ba99be/raw/257f15100fd46aeeb8e33a7629b209d0a14b9975/gistfile1.sh -O /etc/grub.d/31_hold_shift
 $ chmod a+x /etc/grub.d/31_hold_shift
 $ ROOTUUID=$(blkid /dev/nvme0n1p3 | awk '{print $2}' | cut -d '"' -f2)
-$ sed -i "s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=$ROOTUUID:lvm:allow-discards root=\/dev\/mapper\/arch-root resume=\/dev\/mapper\/arch-swap\"/" /etc/default/grub
+$ sed -i "s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=$ROOTUUID:lvm root=\/dev\/mapper\/arch-root resume=\/dev\/mapper\/arch-swap\"/" /etc/default/grub
 $ grub-mkconfig -o /boot/grub/grub.cfg
-$ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id="grub" --recheck
-$ chmod -R g-rwx,o-rwx /boot
 ```
 #### Cleanup and reboot!
 ```
