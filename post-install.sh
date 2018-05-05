@@ -14,6 +14,7 @@ echo "blacklist ideapad_laptop" >> /etc/modprobe.d/blacklist.conf
 echo "blacklist wacom" >> /etc/modprobe.d/blacklist.conf
 
 # Set your mkinitcpio encrypt/lvm2 hooks and rebuild.
+sed -i 's/^MODULES=.*/MODULES=(ext4 i915)/' /etc/mkinitcpio.conf
 sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect modconf block keymap encrypt lvm2 resume filesystems keyboard fsck)/' /etc/mkinitcpio.conf
 mkinitcpio -p linux
 
