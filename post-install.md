@@ -26,7 +26,7 @@ sudo systemctl mask systemd-rfkill.socket
 
 #### Install system packages
 ```
-sudo pacman -S mesa vulkan-intel acpi alsa-utils unzip
+sudo pacman -S mesa vulkan-intel acpi alsa-firmware alsa-utils alsa-plugins pulseaudio-alsa pulseaudio unzip
 alsamixer
 ```
 
@@ -49,28 +49,22 @@ rm 1.050R-it.zip
 #### Install WM
 ```
 sudo pacman -S xorg-server xorg-xinit i3-gaps rofi
-wget https://github.com/mmau01/dotfiles/raw/master/.xinitrc
-wget https://github.com/mmau01/dotfiles/raw/master/.bashrc
 cd /etc/X11/xorg.conf.d/
 wget https://github.com/mmau01/dotfiles/raw/master/xorg.conf.d/40-libinput.conf
 ```
 
 #### Install apps
 ```
-sudo pacman -S rxvt-unicode arandr chromium
+sudo pacman -S rxvt-unicode arandr chromium compton
 ```
 
 #### dotfiles
 ```
-
-```
-
--------------------------------------------------------------------------------------------------
-
-#### Install theme packages
-```
-sudo pacman -S lxappearance gtk-engine-murrine arc-gtk-theme numix-gtk-theme  --noconfirm --needed
-pacaur -S paper-icon-theme-git
+cd /tmp
+git clone https://github.com/mmau01/dotfiles
+cd dotfiles
+cp -r .config .gtk-3.0 ~
+cp .xinitrc .bashrc .vimrc .Xresources .gtkrc-2.0 ~
 ```
 
 #### vim color scheme and airline status bar
@@ -82,4 +76,10 @@ rm -rf /tmp/pathogen/
 cd ~/.vim/bundle
 git clone https://github.com/dikiaap/minimalist
 git clone https://github.com/vim-airline/vim-airline
+```
+
+#### Install theme packages
+```
+sudo pacman -S lxappearance gtk-engine-murrine arc-gtk-theme numix-gtk-theme  --noconfirm --needed
+pacaur -S paper-icon-theme-git
 ```
