@@ -26,7 +26,7 @@ sudo systemctl mask systemd-rfkill.socket
 
 #### Install system packages
 ```
-sudo pacman -S mesa vulkan-intel acpi alsa-utils
+sudo pacman -S mesa vulkan-intel acpi alsa-utils unzip
 alsamixer
 ```
 
