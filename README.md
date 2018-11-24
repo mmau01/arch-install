@@ -49,9 +49,9 @@ $ genfstab -Up /mnt >> /mnt/etc/fstab
 ```
 $ arch-chroot /mnt /bin/bash
 $ cd /tmp
-$ wget https://github.com/mmau01/arch-install/raw/master/post-install.sh
-$ chmod +x post-install.sh
-$ ./post-install.sh
+$ wget https://github.com/mmau01/arch-install/raw/master/base-config.sh
+$ chmod +x base-config.sh
+$ ./base-config.sh
 ```
 #### Cleanup and reboot!
 ```
