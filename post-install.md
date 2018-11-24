@@ -81,6 +81,6 @@ git clone https://github.com/vim-airline/vim-airline
 #### Install theme packages
 ```
 sudo pacman -S lxappearance gtk-engine-murrine arc-gtk-theme numix-gtk-theme  --noconfirm --needed
-pacaur -S meson-git
+sudo pacman -S meson
 pacaur -S paper-icon-theme-git
 ```
