@@ -32,18 +32,10 @@ alsamixer
 
 #### Install fonts
 ```
-sudo pacman -S ttf-dejavu ttf-liberation noto-fonts
+sudo pacman -S ttf-dejavu ttf-liberation noto-fonts ttf-hack ttf-font-awesome
 sudo ln -s /etc/fonts/conf.avail/70-no-bitmaps.conf /etc/fonts/conf.d
 sudo ln -s /etc/fonts/conf.avail/10-sub-pixel-rgb.conf /etc/fonts/conf.d
 sudo ln -s /etc/fonts/conf.avail/11-lcdfilter-default.conf /etc/fonts/conf.d
-
-wget https://github.com/adobe-fonts/source-code-pro/archive/2.030R-ro/1.050R-it.zip
-unzip 1.050R-it.zip
-mkdir -p ~/.fonts
-cp source-code-pro-*-it/OTF/*.otf ~/.fonts/
-fc-cache -f -v
-rm -rf source-code-pro-*-it
-rm 1.050R-it.zip
 ```
 
 #### Install WM
