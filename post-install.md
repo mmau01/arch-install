@@ -40,7 +40,7 @@ sudo ln -s /etc/fonts/conf.avail/11-lcdfilter-default.conf /etc/fonts/conf.d
 
 #### Install WM
 ```
-sudo pacman -S xorg-server xorg-xinit i3-gaps rofi
+sudo pacman -S xorg-server xorg-xinit i3-gaps rofi polybar feh
 cd /etc/X11/xorg.conf.d/
 wget https://github.com/mmau01/dotfiles/raw/master/xorg.conf.d/40-libinput.conf
 ```
@@ -61,12 +61,12 @@ cp .xinitrc .bashrc .vimrc .Xresources .gtkrc-2.0 ~
 
 #### nvim color scheme and airline status bar
 ```
-mkdir -p ~/.vim/autoload ~/.vim/bundle
-mkdir /tmp/pathogen && cd /tmp/pathogen && git clone https://github.com/tpope/vim-pathogen
-cp /tmp/pathogen/vim-pathogen/autoload/pathogen.vim ~/.vim/autoload/
-rm -rf /tmp/pathogen/
-cd ~/.vim/bundle
+mkdir -p .local/share/nvim/site/pack/mycolors/opt/minimalist/
 git clone https://github.com/dikiaap/minimalist
+cp -R minimalist/colors/ .local/share/nvim/site/pack/mycolors/opt/minimalist/
+
+mkdir -p .local/share/nvim/site/pack/vim-airline/start/
+cd .local/share/nvim/site/pack/vim-airline/start/
 git clone https://github.com/vim-airline/vim-airline
 ```
 
