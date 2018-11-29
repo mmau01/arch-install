@@ -32,7 +32,7 @@ alsamixer
 
 #### Install fonts
 ```
-sudo pacman -S ttf-dejavu ttf-liberation noto-fonts ttf-hack ttf-font-awesome
+sudo pacman -S ttf-dejavu ttf-liberation noto-fonts ttf-hack ttf-font-awesome-4
 sudo ln -s /etc/fonts/conf.avail/70-no-bitmaps.conf /etc/fonts/conf.d
 sudo ln -s /etc/fonts/conf.avail/10-sub-pixel-rgb.conf /etc/fonts/conf.d
 sudo ln -s /etc/fonts/conf.avail/11-lcdfilter-default.conf /etc/fonts/conf.d
@@ -47,7 +47,7 @@ wget https://github.com/mmau01/dotfiles/raw/master/xorg.conf.d/40-libinput.conf
 
 #### Install apps
 ```
-sudo pacman -S rxvt-unicode arandr chromium compton
+sudo pacman -S alacritty arandr chromium compton
 ```
 
 #### dotfiles
@@ -59,7 +59,7 @@ cp -r .config .gtk-3.0 ~
 cp .xinitrc .bashrc .vimrc .Xresources .gtkrc-2.0 ~
 ```
 
-#### vim color scheme and airline status bar
+#### nvim color scheme and airline status bar
 ```
 mkdir -p ~/.vim/autoload ~/.vim/bundle
 mkdir /tmp/pathogen && cd /tmp/pathogen && git clone https://github.com/tpope/vim-pathogen
