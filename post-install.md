@@ -32,7 +32,7 @@ alsamixer
 
 #### Install fonts
 ```
-sudo pacman -S ttf-dejavu ttf-liberation noto-fonts ttf-hack ttf-font-awesome-4
+sudo pacman -S ttf-dejavu ttf-liberation noto-fonts ttf-hack ttf-font-awesome-4 adobe-source-code-pro-fonts adobe-source-sans-pro-fonts
 sudo ln -s /etc/fonts/conf.avail/70-no-bitmaps.conf /etc/fonts/conf.d
 sudo ln -s /etc/fonts/conf.avail/10-sub-pixel-rgb.conf /etc/fonts/conf.d
 sudo ln -s /etc/fonts/conf.avail/11-lcdfilter-default.conf /etc/fonts/conf.d
