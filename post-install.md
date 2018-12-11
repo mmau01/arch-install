@@ -50,21 +50,8 @@ wget https://github.com/mmau01/dotfiles/raw/master/xorg.conf.d/40-libinput.conf
 sudo pacman -S alacritty arandr chromium compton
 ```
 
-#### dotfiles
+#### airline status bar
 ```
-cd /tmp
-git clone https://github.com/mmau01/dotfiles
-cd dotfiles
-cp -r .config .gtk-3.0 ~
-cp .xinitrc .bashrc .vimrc .Xresources .gtkrc-2.0 ~
-```
-
-#### nvim color scheme and airline status bar
-```
-mkdir -p .local/share/nvim/site/pack/mycolors/opt/minimalist/
-git clone https://github.com/dikiaap/minimalist
-cp -R minimalist/colors/ .local/share/nvim/site/pack/mycolors/opt/minimalist/
-
 mkdir -p .local/share/nvim/site/pack/vim-airline/start/
 cd .local/share/nvim/site/pack/vim-airline/start/
 git clone https://github.com/vim-airline/vim-airline
