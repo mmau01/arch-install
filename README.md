@@ -1,14 +1,8 @@
 # Arch install
 
-#### Laptop module blacklist
-```
-$ echo "blacklist ideapad_laptop" >> /etc/modprobe.d/blacklist.conf
-$ echo "blacklist wacom" >> /etc/modprobe.d/blacklist.conf
-$ rfkill unblock all
-```
-
 #### Internet access.
 ```
+$ rfkill unblock all
 $ wifi-menu
 ```
 #### Create partitions for EFI, boot, and root.
@@ -39,7 +33,7 @@ $ mount /dev/nvme0n1p1 /mnt/boot/efi
 ```
 #### Install the base system.
 ```
-$ pacstrap /mnt base base-devel efibootmgr networkmanager grub-efi-x86_64 btrfs-progs intel-ucode neovim wget net-tools
+$ pacstrap /mnt base base-devel linux linux-firmware efibootmgr networkmanager grub-efi-x86_64 btrfs-progs intel-ucode neovim wget net-tools
 ```
 #### Generate and verify fstab.
 ```
