@@ -26,8 +26,7 @@ sudo systemctl mask systemd-rfkill.socket
 
 #### Install system packages
 ```
-sudo pacman -S mesa vulkan-intel acpi alsa-firmware alsa-utils alsa-plugins pulseaudio-alsa pulseaudio unzip
-alsamixer
+sudo pacman -S mesa vulkan-intel acpi unzip
 ```
 
 #### Install fonts
@@ -40,14 +39,14 @@ sudo ln -s /etc/fonts/conf.avail/11-lcdfilter-default.conf /etc/fonts/conf.d
 
 #### Install WM
 ```
-sudo pacman -S xorg-server xorg-xinit i3-gaps rofi polybar feh
+sudo pacman -S xorg-server xorg-xinit rofi polybar feh
 cd /etc/X11/xorg.conf.d/
 wget https://github.com/mmau01/dotfiles/raw/master/xorg.conf.d/40-libinput.conf
 ```
 
 #### Install apps
 ```
-sudo pacman -S alacritty arandr chromium compton
+sudo pacman -S alacritty
 ```
 
 #### airline status bar
@@ -62,4 +61,12 @@ git clone https://github.com/vim-airline/vim-airline
 sudo pacman -S lxappearance gtk-engine-murrine arc-gtk-theme numix-gtk-theme  --noconfirm --needed
 sudo pacman -S meson
 pacaur -S paper-icon-theme-git
+```
+
+#### Git/Stow install/config
+```
+sudo pacman -S stow git
+mkdir -p $HOME/dotfiles
+cd $HOME/dotfiles
+git pull......
 ```
