@@ -46,9 +46,6 @@ $ genfstab -U /mnt >> /mnt/etc/fstab
 #### Select mirrors
 ```
 pacman -Syy
-```
-Generate a new mirror selection using reflector.
-```
 reflector --verbose --protocol https --latest 5 --sort rate --country Australia --save /etc/pacman.d/mirrorlist
 ```
 #### Install the base system.
@@ -78,7 +75,7 @@ echo 'hostname' > /etc/hostname
     ::1        localhost
     127.0.1.1  hostname.localdomain hostname
 ```
-####Set a system-wide default editor
+#### Set a system-wide default editor
 ```
 echo "EDITOR=nvim" > /etc/environment && echo "VISUAL=nvim" >> /etc/environment
 ```
@@ -120,7 +117,7 @@ Replace the UUID (not PARTUUID) to the one mapping to /dev/sda2 (Run blkid to fi
     initrd  /initramfs-linux.img
     options cryptdevice=UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX:cryptroot root=/dev/mapper/cryptroot rw
 ```
-#### Replace /boot/loader/loader.conf to
+#### Replace /boot/loader/loader.conf
 ```
 default      arch.conf
 timeout      3
@@ -146,13 +143,11 @@ $ umount -R /mnt
 $ reboot
 ```
 #### Check for errors
+```
 Failed systemd services
-```
-systemctl --failed
-```
+$ systemctl --failed
 High priority errors in the systemd journal
-```
-journalctl -p 3 -xb
+$ journalctl -p 3 -xb
 ```
 #### Connect to Wi-Fi:
 ```
@@ -161,22 +156,20 @@ $ nmcli d wifi connect MY_WIFI password MY_PASSWORD
 ```
 #### Sudo
 ```
-echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
+$ echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
 ```
 #### Pacman
-Bring the spirit of Pacman to the package manager with the ILoveCandy option.
-Modify /etc/pacman.conf ...
+Modify /etc/pacman.conf
 ```
 # Misc options
 Color
 ILoveCandy
 ```
-Update system ...
+Update system
 ```
 $ sudo pacman -Syu
 ```
 #### Update systemd-boot
-Create ...
 ```
 $ sudo mkdir /etc/pacman.d/hooks
 ```
@@ -193,7 +186,6 @@ When = PostTransaction
 Exec = /usr/bin/bootctl update
 ```
 #### Mirrors
-As during the install, use reflector to generate a fresh mirrorlist.
 Set parameters in /etc/xdg/reflector/reflector.conf
 ```
 --save /etc/pacman.d/mirrorlist
