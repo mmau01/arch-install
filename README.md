@@ -43,9 +43,17 @@ $ mount /dev/sda1 /mnt/boot
 ```
 $ genfstab -U /mnt >> /mnt/etc/fstab
 ```
+#### Select mirrors
+```
+pacman -Syy
+```
+Generate a new mirror selection using reflector.
+```
+reflector --verbose --protocol https --latest 5 --sort rate --country Australia --save /etc/pacman.d/mirrorlist
+```
 #### Install the base system.
 ```
-$ pacstrap /mnt base base-devel linux linux-firmware mkinitcpio networkmanager neovim dhcpcd wpa_supplicant 
+$ pacstrap /mnt base base-devel intel-ucode linux linux-firmware bash-completion cryptsetup neovim networkmanager reflector sudo wpa_supplicant
 ```
 #### Chroot
 ```
@@ -59,8 +67,8 @@ $ hwclock --systohc
 #### Localization
 ```
 Edit /etc/locale.gen and uncomment en_AU.UTF-8 UTF-8 and other needed locales. Generate the locales by running:
-$ locale-gen
 $ localectl set-locale LANG=en_AU.UTF-8
+$ locale-gen
 ```
 #### Network configuration
 ```
@@ -70,10 +78,14 @@ echo 'hostname' > /etc/hostname
     ::1        localhost
     127.0.1.1  hostname.localdomain hostname
 ```
+####Set a system-wide default editor
+```
+echo "EDITOR=nvim" > /etc/environment && echo "VISUAL=nvim" >> /etc/environment
+```
 #### Configuring mkinitcpio
 ```
 /etc/mkinitcpio.conf:
-    HOOKS=(base udev autodetect modconf block keyboard encrypt filesystems fsck)
+    HOOKS=(base udev keyboard autodetect modconf block encrypt filesystems fsck)
 ```
 #### Generate the initramfs
 ```
@@ -83,6 +95,12 @@ $ mkinitcpio -P
 #### Set the root password
 ```
 $ passwd
+```
+#### Add user
+```
+useradd -m -G wheel -s /bin/bash foo
+passwd foo
+sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
 ```
 #### Patch the CPU’s microcode
 ```
@@ -105,9 +123,9 @@ Replace the UUID (not PARTUUID) to the one mapping to /dev/sda2 (Run blkid to fi
 #### Replace /boot/loader/loader.conf to
 ```
 default      arch.conf
-timeout      5
+timeout      3
 console-mode max
-editor       no
+editor       yes
 ```
 #### Review the configuration
 ```
@@ -127,21 +145,67 @@ $ exit
 $ umount -R /mnt
 $ reboot
 ```
-#### Enable dhcpcd:
+#### Check for errors
+Failed systemd services
 ```
-$ systemctl enable dhcpcd
+systemctl --failed
+```
+High priority errors in the systemd journal
+```
+journalctl -p 3 -xb
 ```
 #### Connect to Wi-Fi:
 ```
 $ nmcli d wifi list
 $ nmcli d wifi connect MY_WIFI password MY_PASSWORD
 ```
-#### Add User
+#### Sudo
 ```
-$ EDITOR=nvim visudo 
-uncomment %wheel ALL=(ALL) NOPASSWD: ALL
-$ useradd --create-home --groups wheel user
-$ passwd user
+echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
+```
+#### Pacman
+Bring the spirit of Pacman to the package manager with the ILoveCandy option.
+Modify /etc/pacman.conf ...
+```
+# Misc options
+Color
+ILoveCandy
+```
+Update system ...
+```
+$ sudo pacman -Syu
+```
+#### Update systemd-boot
+Create ...
+```
+$ sudo mkdir /etc/pacman.d/hooks
+```
+Automatically update the boot manager whenever a new version of systemd-boot is reinstalled by creating /etc/pacman.d/hooks/100-systemd-boot.hook ...
+```
+[Trigger]
+Type = Package
+Operation = Upgrade
+Target = systemd
+
+[Action]
+Description = Updating systemd-boot
+When = PostTransaction
+Exec = /usr/bin/bootctl update
+```
+#### Mirrors
+As during the install, use reflector to generate a fresh mirrorlist.
+Set parameters in /etc/xdg/reflector/reflector.conf
+```
+--save /etc/pacman.d/mirrorlist
+--protocol https
+--country Canada,Germany
+--latest 5
+--sort rate
+```
+Reflector ships with a systemd service and timer: /usr/lib/systemd/system/reflector.{service,timer}
+Enable and start the timer (default is weekly update, edit reflector.timer to change)
+```
+$ sudo systemctl enable --now reflector.timer
 ```
 #### Set Up Sound
 ```
