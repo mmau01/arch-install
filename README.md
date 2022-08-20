@@ -6,42 +6,31 @@ $ ls /sys/firmware/efi/efivars
 If the command shows the directory without error, then the system is booted in UEFI mode.
 #### Update the system clock
 ```
-$ timedatectl set-ntp true
+$ timedatectl set-ntp 1
 ```
 #### Internet access.
 ```
 $ rfkill unblock all
-$ wifi-menu
+$ iwctl
 ```
 #### Partition the disks
 ```
 $ cgdisk /dev/nvme0n1
   1 512MiB EFI partition # Hex code ef00
-  2 8GiB Swap partition
-  3 100% size partiton # (to be encrypted) Hex code 8300
-```
-```
-Number  Start (sector)    End (sector)  Size       Code  Name
-   1            2048         1050623   512.0 MiB   EF00  EFI system partition
-   2    --swap--
-   3         1050624        41943006    19.5 GiB   8300  Linux filesystem
+  2 100% size partiton # (to be encrypted) Hex code 8300
 ```
 #### Prepare the encrypted root partition
 ```
-$ cryptsetup luksFormat /dev/sda2
-$ cryptsetup open /dev/sda2 cryptroot
+$ cryptsetup luksFormat /dev/nvme0n1p2
+$ cryptsetup open /dev/nvme0n1p2 cryptroot
 $ mkfs.ext4 /dev/mapper/cryptroot
 $ mount /dev/mapper/cryptroot /mnt
 ```
 #### Prepare the boot partition
 ```
-$ mkfs.fat -F32 /dev/sda1
+$ mkfs.fat -F32 /dev/nvme0n1p1
 $ mkdir /mnt/boot
-$ mount /dev/sda1 /mnt/boot
-```
-#### Generate an fstab file
-```
-$ genfstab -U /mnt >> /mnt/etc/fstab
+$ mount /dev/nvme0n1p1 /mnt/boot
 ```
 #### Select mirrors
 ```
@@ -50,7 +39,11 @@ reflector --verbose --protocol https --latest 5 --sort rate --country Australia 
 ```
 #### Install the base system.
 ```
-$ pacstrap /mnt base base-devel intel-ucode linux linux-firmware bash-completion cryptsetup neovim networkmanager reflector sudo wpa_supplicant
+$ pacstrap /mnt base base-devel intel-ucode linux linux-firmware bash-completion cryptsetup neovim reflector sudo iwd
+```
+#### Generate an fstab file
+```
+$ genfstab -U /mnt >> /mnt/etc/fstab
 ```
 #### Chroot
 ```
