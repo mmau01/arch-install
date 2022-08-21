@@ -103,7 +103,7 @@ $ bootctl install
 #### Create /boot/loader/entries/arch.conf
 ```
 Replace intel-ucode.img with amd-ucode.img if you have an AMD CPU
-Replace the UUID (not PARTUUID) to the one mapping to /dev/sda2 (Run blkid to find out)
+Replace the UUID (not PARTUUID) to the one mapping to /dev/nvme0n1p2 (Run blkid to find out)
     title   Arch Linux
     linux   /vmlinuz-linux
     initrd  /intel-ucode.img
@@ -142,14 +142,23 @@ $ systemctl --failed
 High priority errors in the systemd journal
 $ journalctl -p 3 -xb
 ```
-#### Connect to Wi-Fi:
-```
-$ nmcli d wifi list
-$ nmcli d wifi connect MY_WIFI password MY_PASSWORD
-```
 #### Sudo
 ```
 $ echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
+```
+#### Mirrors
+Set parameters in /etc/xdg/reflector/reflector.conf
+```
+--save /etc/pacman.d/mirrorlist
+--protocol https
+--country Australia
+--latest 5
+--sort rate
+```
+Reflector ships with a systemd service and timer: /usr/lib/systemd/system/reflector.{service,timer}
+Enable and start the timer (default is weekly update, edit reflector.timer to change)
+```
+$ sudo systemctl enable --now reflector.timer
 ```
 #### Pacman
 Modify /etc/pacman.conf
@@ -177,20 +186,6 @@ Target = systemd
 Description = Updating systemd-boot
 When = PostTransaction
 Exec = /usr/bin/bootctl update
-```
-#### Mirrors
-Set parameters in /etc/xdg/reflector/reflector.conf
-```
---save /etc/pacman.d/mirrorlist
---protocol https
---country Canada,Germany
---latest 5
---sort rate
-```
-Reflector ships with a systemd service and timer: /usr/lib/systemd/system/reflector.{service,timer}
-Enable and start the timer (default is weekly update, edit reflector.timer to change)
-```
-$ sudo systemctl enable --now reflector.timer
 ```
 #### Set Up Sound
 ```
