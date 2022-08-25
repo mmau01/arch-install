@@ -217,3 +217,5 @@ git clone https://aur.archlinux.org/yay.git
 cd yay
 makepkg -si
 ```
+#### Intel Graphics
+Install `mesa` and `vulkan-intel`
