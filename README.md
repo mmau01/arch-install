@@ -210,3 +210,10 @@ $ sudo systemctl enable fstrim.timer --now
 ```
 $ echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
 ```
+#### Install YAY
+```
+pacman -S --needed git base-devel
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+```
