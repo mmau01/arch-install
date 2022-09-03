@@ -1,9 +1,4 @@
 # Arch install
-#### Verify the boot mode
-```
-$ ls /sys/firmware/efi/efivars
-```
-If the command shows the directory without error, then the system is booted in UEFI mode.
 #### Update the system clock
 ```
 $ timedatectl set-ntp 1
@@ -35,11 +30,11 @@ $ mount /dev/nvme0n1p1 /mnt/boot
 #### Select mirrors
 ```
 pacman -Syy
-reflector --verbose --protocol https --latest 5 --sort rate --country Australia --save /etc/pacman.d/mirrorlist
+reflector --latest 5 --sort rate --country Australia --save /etc/pacman.d/mirrorlist
 ```
 #### Install the base system.
 ```
-$ pacstrap /mnt base base-devel intel-ucode linux linux-firmware bash-completion cryptsetup neovim reflector sudo iwd
+$ pacstrap /mnt base base-devel intel-ucode linux linux-firmware bash-completion cryptsetup neovim reflector sudo iwd mesa vulkan-intel
 ```
 #### Generate an fstab file
 ```
@@ -56,41 +51,30 @@ $ hwclock --systohc
 ```
 #### Localization
 ```
-Edit /etc/locale.gen and uncomment en_AU.UTF-8 UTF-8 and other needed locales. Generate the locales by running:
+$ echo en_AU.UTF-8 UTF-8 >> /etc/locale.gen
 $ localectl set-locale LANG=en_AU.UTF-8
 $ locale-gen
 ```
-#### Network configuration
+#### Hostname
 ```
 echo 'hostname' > /etc/hostname
-/etc/hosts:
-    127.0.0.1  localhost
-    ::1        localhost
-    127.0.1.1  hostname.localdomain hostname
 ```
 #### Set a system-wide default editor
 ```
 echo "EDITOR=nvim" > /etc/environment && echo "VISUAL=nvim" >> /etc/environment
 ```
-#### Configuring mkinitcpio
+#### Configuring mkinitcpio and generate the initramfs
 ```
-/etc/mkinitcpio.conf:
-    HOOKS=(base udev keyboard autodetect modconf block encrypt filesystems fsck)
-```
-#### Generate the initramfs
-```
-Since we have changed to /etc/mkinitcpio.conf manually, we have to re-generates the boot images (e.g., /boot/initramfs-linux.img).
+$ sed -i 's/^HOOKS=.*/HOOKS=(base udev keyboard autodetect modconf block encrypt filesystems fsck)/' /etc/mkinitcpio.conf
 $ mkinitcpio -P
 ```
-#### Set the root password
+#### Users
 ```
 $ passwd
-```
-#### Add user
-```
-useradd -m -G wheel -s /bin/bash foo
-passwd foo
-sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
+$ useradd -m -G wheel -s /bin/bash foo
+$ passwd foo
+$ sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
+$ echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
 ```
 #### Patch the CPU’s microcode
 ```
@@ -142,10 +126,6 @@ $ systemctl --failed
 High priority errors in the systemd journal
 $ journalctl -p 3 -xb
 ```
-#### Sudo
-```
-$ echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
-```
 #### Mirrors
 Set parameters in /etc/xdg/reflector/reflector.conf
 ```
@@ -165,7 +145,6 @@ Modify /etc/pacman.conf
 ```
 # Misc options
 Color
-ILoveCandy
 ```
 Update system
 ```
@@ -217,5 +196,3 @@ git clone https://aur.archlinux.org/yay.git
 cd yay
 makepkg -si
 ```
-#### Intel Graphics
-Install `mesa` and `vulkan-intel`
