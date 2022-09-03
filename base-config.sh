@@ -2,28 +2,45 @@
 
 # Base config.
 echo en_AU.UTF-8 UTF-8 >> /etc/locale.gen
+localectl set-locale LANG=en_AU.UTF-8
 locale-gen
-echo LANG=en_AU.UTF-8 > /etc/locale.conf
 export LANG=en_AU.UTF-8
 ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
 hwclock --systohc --utc
 echo c642r > /etc/hostname
-passwd
-systemctl enable NetworkManager.service
+echo "EDITOR=nvim" > /etc/environment && echo "VISUAL=nvim" >> /etc/environment
 echo "blacklist ideapad_laptop" >> /etc/modprobe.d/blacklist.conf
 echo "blacklist wacom" >> /etc/modprobe.d/blacklist.conf
 
 # Set your mkinitcpio encrypt/lvm2 hooks and rebuild.
-sed -i 's/^MODULES=.*/MODULES=(i915)/' /etc/mkinitcpio.conf
-sed -i 's/^HOOKS=.*/HOOKS=(base udev autodetect modconf block keymap encrypt lvm2 resume filesystems keyboard fsck)/' /etc/mkinitcpio.conf
-mkinitcpio -p linux
+sed -i 's/^HOOKS=.*/HOOKS=(base udev keyboard autodetect modconf block encrypt filesystems fsck)/' /etc/mkinitcpio.conf
+mkinitcpio -P
 
-# Install and configure GRUB.
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck
-#sed -i 's/^#GRUB_ENABLE_CRYPTODISK=.*/GRUB_ENABLE_CRYPTODISK=y/' /etc/default/grub
-echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /etc/default/grub
-wget https://gist.githubusercontent.com/anonymous/8eb2019db2e278ba99be/raw/257f15100fd46aeeb8e33a7629b209d0a14b9975/gistfile1.sh -O /etc/grub.d/31_hold_shift
-chmod a+x /etc/grub.d/31_hold_shift
-ROOTUUID=$(blkid /dev/nvme0n1p3 | awk '{print $2}' | cut -d '"' -f2)
-sed -i "s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"cryptdevice=UUID=$ROOTUUID:lvm root=\/dev\/mapper\/arch-root resume=\/dev\/mapper\/arch-swap\"/" /etc/default/grub
-grub-mkconfig -o /boot/grub/grub.cfg
+# Users
+passwd
+useradd -m -G wheel -s /bin/bash mike
+passwd mike
+sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
+
+# Patch Intel microcode
+pacman -S intel-ucode --noconfirm
+
+# Bootloader
+## !Replace the UUID (not PARTUUID) to the one mapping to /dev/nvme0n1p2 (Run blkid to find out)
+bootctl install
+echo "title   Arch Linux" >> /boot/loader/entries/arch.conf
+echo "linux   /vmlinuz-linux" >> /boot/loader/entries/arch.conf
+echo "initrd  /intel-ucode.img" >> /boot/loader/entries/arch.conf
+echo "initrd  /initramfs-linux.img" >> /boot/loader/entries/arch.conf
+echo "options cryptdevice=UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX:cryptroot root=/dev/mapper/cryptroot rw" >> /boot/loader/entries/arch.conf
+## !clear /boot/loader/loader.conf first
+echo "default      arch.conf" >> /boot/loader/loader.conf
+echo "timeout      3" >> /boot/loader/loader.conf
+echo "console-mode max" >> /boot/loader/loader.conf
+echo "editor       yes" >> /boot/loader/loader.conf
+bootctl list
+
+echo "exit the chroot, unmount, and reboot:"
+echo "$ exit"
+echo "$ umount -R /mnt"
+echo "$ reboot"
