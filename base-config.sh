@@ -21,6 +21,7 @@ passwd
 useradd -m -G wheel -s /bin/bash mike
 passwd mike
 sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
+echo "mike ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_mike
 
 # Patch Intel microcode
 pacman -S intel-ucode --noconfirm
