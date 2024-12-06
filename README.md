@@ -1,7 +1,7 @@
 # Arch install
-#### Update the system clock
+#### Check system clock is correct
 ```
-$ timedatectl set-ntp 1
+$ timedatectl
 ```
 #### Internet access.
 ```
@@ -11,8 +11,8 @@ $ iwctl
 #### Partition the disks
 ```
 $ cgdisk /dev/nvme0n1
-  1 512MiB EFI partition # Hex code ef00
-  2 100% size partiton # (to be encrypted) Hex code 8300
+  1 /boot 1G EFI partition # Hex code ef00
+  2 / 100% size partiton # (to be encrypted) Hex code 8300
 ```
 #### Prepare the encrypted root partition
 ```
@@ -24,8 +24,7 @@ $ mount /dev/mapper/cryptroot /mnt
 #### Prepare the boot partition
 ```
 $ mkfs.fat -F32 /dev/nvme0n1p1
-$ mkdir /mnt/boot
-$ mount /dev/nvme0n1p1 /mnt/boot
+$ mount --mkdir /dev/nvme0n1p1 /mnt/boot
 ```
 #### Select mirrors
 ```
