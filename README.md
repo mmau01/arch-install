@@ -33,6 +33,8 @@ reflector --latest 5 --sort rate --country Australia --save /etc/pacman.d/mirror
 ```
 #### Install the base system.
 ```
+$ pacman-key --init
+$ pacman-key --populate
 $ pacstrap /mnt base base-devel intel-ucode linux linux-firmware bash-completion cryptsetup neovim reflector sudo iwd mesa vulkan-intel
 ```
 #### Generate an fstab file
