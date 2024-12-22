@@ -77,10 +77,6 @@ $ passwd foo
 $ sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
 $ echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
 ```
-#### Patch the CPU’s microcode
-```
-$ pacman -S intel-ucode
-```
 #### Install the EFI boot manager
 ```
 $ bootctl install
