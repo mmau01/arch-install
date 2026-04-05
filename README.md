@@ -96,6 +96,7 @@ sudo pacman -S pipewire pipewire-audio pipewire-jack pipewire-pulse pipewire-ses
 ```
 #### apps
 ```
+dotfiles - chezmoi
 System packages - git, reflector
 WM - Niri
 Terminal - Alacritty
