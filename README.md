@@ -14,7 +14,7 @@ $ archinstall
 ```
 #### Set a system-wide default editor
 ```
-$ cho "EDITOR=helix" > /etc/environment && echo "VISUAL=helix" >> /etc/environment
+$ echo "EDITOR=helix" > /etc/environment && echo "VISUAL=helix" >> /etc/environment
 ```
 #### Users
 ```
