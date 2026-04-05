@@ -14,7 +14,7 @@ $ archinstall
 ```
 #### Set a system-wide default editor
 ```
-echo "EDITOR=nvim" > /etc/environment && echo "VISUAL=nvim" >> /etc/environment
+e$ cho "EDITOR=helix" > /etc/environment && echo "VISUAL=helix" >> /etc/environment
 ```
 #### Users
 ```
