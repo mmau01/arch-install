@@ -8,102 +8,41 @@ $ timedatectl
 $ rfkill unblock all
 $ iwctl
 ```
-#### Partition the disks
+#### archinstall
 ```
-$ cgdisk /dev/nvme0n1
-  1 /boot 1G EFI partition # Hex code ef00
-  2 / 100% size partiton # (to be encrypted) Hex code 8300
-```
-#### Prepare the encrypted root partition
-```
-$ cryptsetup luksFormat /dev/nvme0n1p2
-$ cryptsetup open /dev/nvme0n1p2 cryptroot
-$ mkfs.ext4 /dev/mapper/cryptroot
-$ mount /dev/mapper/cryptroot /mnt
-```
-#### Prepare the boot partition
-```
-$ mkfs.fat -F32 /dev/nvme0n1p1
-$ mount --mkdir /dev/nvme0n1p1 /mnt/boot
-```
-#### Select mirrors
-```
-pacman -Syy
-reflector --latest 5 --sort rate --country Australia --save /etc/pacman.d/mirrorlist
-```
-#### Install the base system.
-```
-$ pacman-key --init
-$ pacman-key --populate
-$ pacstrap /mnt base base-devel intel-ucode linux linux-firmware bash-completion cryptsetup neovim reflector sudo iwd mesa vulkan-intel
-```
-#### Generate an fstab file
-```
-$ genfstab -U /mnt >> /mnt/etc/fstab
-```
-#### Chroot
-```
-$ arch-chroot /mnt
-```
-#### Time zone
-```
-$ ln -sf /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
-$ hwclock --systohc
-```
-#### Localization
-```
-$ echo en_AU.UTF-8 UTF-8 >> /etc/locale.gen
-$ localectl set-locale LANG=en_AU.UTF-8
-$ locale-gen
-```
-#### Hostname
-```
-echo 'hostname' > /etc/hostname
+$ archinstall
 ```
 #### Set a system-wide default editor
 ```
 echo "EDITOR=nvim" > /etc/environment && echo "VISUAL=nvim" >> /etc/environment
 ```
-#### Configuring mkinitcpio and generate the initramfs
-```
-$ sed -i 's/^HOOKS=.*/HOOKS=(base udev keyboard autodetect modconf block encrypt filesystems fsck)/' /etc/mkinitcpio.conf
-$ mkinitcpio -P
-```
 #### Users
 ```
-$ passwd
 $ useradd -m -G wheel -s /bin/bash foo
 $ passwd foo
 $ sed -i "s/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/" /etc/sudoers
 $ echo "foo ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/sudoer_foo
 ```
-#### Bootloader
-#### Cleanup and reboot!
+#### wifi
 ```
-$ exit
-$ umount -R /mnt
-$ reboot
+rfkill unblock wlan
+systemctl enable iwd
+systemctl start iwd
+systemctl enable systemd-resolved
+systemctl start systemd-resolved
 ```
-#### Check for errors
+/etc/iwd/main.conf
 ```
-Failed systemd services
-$ systemctl --failed
-High priority errors in the systemd journal
-$ journalctl -p 3 -xb
+[General]
+EnableNetworkConfiguration=true
+[Network]
+NameResolvingService=systemd
 ```
-#### Mirrors
-Set parameters in /etc/xdg/reflector/reflector.conf
+#### Select mirrors
 ```
---save /etc/pacman.d/mirrorlist
---protocol https
---country Australia
---latest 5
---sort rate
-```
-Reflector ships with a systemd service and timer: /usr/lib/systemd/system/reflector.{service,timer}
-Enable and start the timer (default is weekly update, edit reflector.timer to change)
-```
-$ sudo systemctl enable --now reflector.timer
+sudo pacman -Syy
+sudo pacman -S rsync
+sudo reflector --latest 5 --sort rate --country Australia --save /etc/pacman.d/mirrorlist
 ```
 #### Pacman
 Modify /etc/pacman.conf
@@ -142,6 +81,82 @@ $ sudo systemctl mask systemd-rfkill.service systemd-rfkill.socket
 $ sudo systemctl enable tlp.service --now
 $ sudo tlp-stat
 ```
+
+#### AUR helper
+```
+sudo pacman -S --needed git base-devel
+git clone https://aur.archlinux.org/yay-bin.git
+cd yay-bin
+makepkg -si
+```
+#### sound
+Configure with wpctl
+```
+sudo pacman -S pipewire pipewire-audio pipewire-jack pipewire-pulse pipewire-session-manager wireplumber
+```
+#### apps
+```
+System packages - git, reflector
+WM - Niri
+Terminal - Alacritty
+Text editor - Helix
+File manager - Thunar
+Browser - Firefox
+GTK theming - nwg-look
+Icon theme - Papirus
+IDE - Zed
+Spotify (themes - Spicetify)
+Discord - https://github.com/Equicord/Equibop
+Globalprotect - https://github.com/yuezk/GlobalProtect-openconnect
+Proton Drive - https://github.com/rclone/rclone
+Proton Pass - proton-pass-bin
+VLC
+bittorrent - transmission-cli
+firewall - evilsocket
+```
+#### gaming
+```
+sudo pacman -S mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader --needed
+sudo pacman -S gamemode
+```
+Add user to gamemode group
+```
+sudo pacman -S umu-launcher
+```
+#### graphics
+```
+sudo pacman -S base-devel linux-headers
+sudo pacman -S mesa vulkan-radeon
+```
+#### zen kernel
+Install kernel + microcode
+```
+sudo pacman -S linux-zen linux-zen-headers intel-ucode
+```
+Install / update systemd-boot
+```
+sudo bootctl install
+sudo bootctl update
+```
+Get your root PARTUUID (copy it)
+```
+blkid
+```
+Create boot entry (replace YOUR_PARTUUID)
+```
+sudo tee /boot/loader/entries/arch-linux-zen.conf > /dev/null <<EOF
+title   Arch Linux (zen)
+linux   /vmlinuz-linux-zen
+initrd  /intel-ucode.img
+initrd  /initramfs-linux-zen.img
+options root=PARTUUID=3d17e0bb-d621-4079-b886-24c392ac250e rw quiet mitigations=off nowatchdog transparent_hugepage=always split_lock_detect=off
+EOF
+```
+Set as default
+```
+sudo bootctl set-default arch-linux-zen.conf
+```
+Reboot
 #### Enable Scheduled fstrim
 ```
 $ sudo systemctl enable fstrim.timer --now
@@ -150,10 +165,49 @@ $ sudo systemctl enable fstrim.timer --now
 ```
 $ echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
 ```
-#### Install YAY
+#### networking
+TCP Congestion Control: BBR (Bottleneck Bandwidth and RTT) reduces latency compared to default Cubic:
 ```
-pacman -S --needed git base-devel
-git clone https://aur.archlinux.org/yay.git
-cd yay
-makepkg -si
+echo "net.ipv4.tcp_congestion_control=bbr" | sudo tee -a /etc/sysctl.conf
+echo "net.core.default_qdisc=fq" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+Reduce network buffer bloat:
+```
+echo "net.ipv4.tcp_rmem = 4096 87380 16777216" | sudo tee -a /etc/sysctl.conf
+echo "net.ipv4.tcp_wmem = 4096 65536 16777216" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+Disable IPv6 if not used: IPv6 fallback attempts can introduce connection latency:
+```
+echo "net.ipv6.conf.all.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+These optimizations typically reduce ping by 5-15ms and improve connection stability during network congestion.
+
+#### Shader compilation optimization
+Shader compilation represents a unique challenge in Linux gaming through Proton.
+Windows games include pre-compiled DirectX shaders, while Linux translates these to Vulkan at runtime.
+Enable Steam's shader pre-caching: 
+Steam > Settings > Shader Pre-Caching > Enable Shader Pre-Caching
+This downloads and compiles shaders before launching games, eliminating first-run stuttering.
+Force RADV pipeline cache for AMD GPUs, add to Steam game launch options or shell profile:
+```
+RADV_PERFTEST=gpl %command%
+```
+The Graphics Pipeline Library allows runtime shader compilation without stuttering, dramatically improving initial gameplay smoothness on AMD hardware.
+
+#### CPU governor
+Linux CPU governors control frequency scaling and power management.
+The default "schedutil" governor prioritizes power efficiency over performance, causing frame rate inconsistency.
+Check current governor:
+```
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+Set performance governor temporarily:
+echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+```
+Permanent configuration > Install cpupower and configure systemd service:
+```
+sudo pacman -S cpupower
+sudo cpupower frequency-set -g performance
 ```
