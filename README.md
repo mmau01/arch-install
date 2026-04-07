@@ -106,12 +106,12 @@ Browser - Firefox
 GTK theming - nwg-look
 Icon theme - Papirus
 IDE - Zed
-Spotify (themes - Spicetify)
+Spotify
 Discord - https://github.com/Equicord/Equibop
 Globalprotect - https://github.com/yuezk/GlobalProtect-openconnect
 Proton Drive - https://github.com/rclone/rclone
 Proton Pass - proton-pass-bin
-VLC
+VLC (yay -S vlc-materia-skin-git)
 bittorrent - transmission-cli
 firewall - evilsocket
 ```
