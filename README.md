@@ -100,8 +100,8 @@ dotfiles - chezmoi
 System packages - git, reflector
 WM - Niri
 Terminal - Alacritty
-Text editor - Helix
-File manager - Thunar
+Text editor - helix / sublime-text-4
+File manager - thunar
 Browser - Firefox
 GTK theming - nwg-look
 Icon theme - Papirus
@@ -111,7 +111,7 @@ Discord - https://github.com/Equicord/Equibop
 Globalprotect - https://github.com/yuezk/GlobalProtect-openconnect
 Proton Drive - https://github.com/rclone/rclone
 Proton Pass - proton-pass-bin
-VLC (yay -S vlc-materia-skin-git)
+vlc vlc-plugin-ffmpeg vlc-plugin-matroska vlc-plugin-mpeg2 vlc-plugin-x264 vlc-plugin-x265
 bittorrent - transmission-cli
 firewall - evilsocket
 ```
@@ -129,35 +129,6 @@ sudo pacman -S umu-launcher
 sudo pacman -S base-devel linux-headers
 sudo pacman -S mesa vulkan-radeon
 ```
-#### zen kernel
-Install kernel + microcode
-```
-sudo pacman -S linux-zen linux-zen-headers intel-ucode
-```
-Install / update systemd-boot
-```
-sudo bootctl install
-sudo bootctl update
-```
-Get your root PARTUUID (copy it)
-```
-blkid
-```
-Create boot entry (replace YOUR_PARTUUID)
-```
-sudo tee /boot/loader/entries/arch-linux-zen.conf > /dev/null <<EOF
-title   Arch Linux (zen)
-linux   /vmlinuz-linux-zen
-initrd  /intel-ucode.img
-initrd  /initramfs-linux-zen.img
-options root=PARTUUID=3d17e0bb-d621-4079-b886-24c392ac250e rw quiet mitigations=off nowatchdog transparent_hugepage=always split_lock_detect=off
-EOF
-```
-Set as default
-```
-sudo bootctl set-default arch-linux-zen.conf
-```
-Reboot
 #### Enable Scheduled fstrim
 ```
 $ sudo systemctl enable fstrim.timer --now
@@ -178,37 +149,4 @@ Reduce network buffer bloat:
 echo "net.ipv4.tcp_rmem = 4096 87380 16777216" | sudo tee -a /etc/sysctl.conf
 echo "net.ipv4.tcp_wmem = 4096 65536 16777216" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
-```
-Disable IPv6 if not used: IPv6 fallback attempts can introduce connection latency:
-```
-echo "net.ipv6.conf.all.disable_ipv6=1" | sudo tee -a /etc/sysctl.conf
-sudo sysctl -p
-```
-These optimizations typically reduce ping by 5-15ms and improve connection stability during network congestion.
-
-#### Shader compilation optimization
-Shader compilation represents a unique challenge in Linux gaming through Proton.
-Windows games include pre-compiled DirectX shaders, while Linux translates these to Vulkan at runtime.
-Enable Steam's shader pre-caching: 
-Steam > Settings > Shader Pre-Caching > Enable Shader Pre-Caching
-This downloads and compiles shaders before launching games, eliminating first-run stuttering.
-Force RADV pipeline cache for AMD GPUs, add to Steam game launch options or shell profile:
-```
-RADV_PERFTEST=gpl %command%
-```
-The Graphics Pipeline Library allows runtime shader compilation without stuttering, dramatically improving initial gameplay smoothness on AMD hardware.
-
-#### CPU governor
-Linux CPU governors control frequency scaling and power management.
-The default "schedutil" governor prioritizes power efficiency over performance, causing frame rate inconsistency.
-Check current governor:
-```
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-Set performance governor temporarily:
-echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-```
-Permanent configuration > Install cpupower and configure systemd service:
-```
-sudo pacman -S cpupower
-sudo cpupower frequency-set -g performance
 ```
